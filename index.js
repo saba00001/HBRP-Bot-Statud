@@ -72,7 +72,7 @@ client.on('messageCreate', async (message) => {
 
   if (message.content.startsWith('!say')) {
     // ეჭვიანობის შემოწმება როლზე
-    const hasRole = message.member.roles.cache.some(role => role.id === allowedRoleId);
+    const hasRole = message.member?.roles.cache.has(allowedRoleId);
     if (!hasRole) {
       return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
     }
