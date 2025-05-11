@@ -64,14 +64,14 @@ client.once('ready', () => {
   heartbeat();
 });
 
-// ცვლის ქვემოთ როლს თქვენს Discord როლის ID-თან
-const allowedRoleId = '1327435040732352601'; // აქ ჩასვით როლის ID
+// როლი, რომელიც შეიძლება გამოიყენოს !say-ს
+const allowedRoleId = 'your-role-id'; // შეცვალეთ როლის ID
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
 
   if (message.content.startsWith('!say')) {
-    // კონდიციები, რათა მხოლოდ კონკრეტულ როლს ჰქონდეს ნებართვა
+    // ეჭვიანობის შემოწმება როლზე
     const hasRole = message.member?.roles.cache.has(allowedRoleId);
     if (!hasRole) {
       return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
@@ -80,16 +80,17 @@ client.on('messageCreate', async (message) => {
     const args = message.content.slice(4).trim();
     if (!args) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
 
+    // სენსორული კოდი, რათა მოვიძიოთ არხი (თუ არსებობს)
     const channelMention = message.mentions.channels.first();
     if (channelMention) {
-      const text = args.replace(channelMention.toString(), '').trim();
+      const text = args.replace(channelMention.toString(), '').trim(); // არხის მინიშნება წაშლილი იქნება
       if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
-      channelMention.send(text);
+      channelMention.send(text); // არხში გაგზავნა
     } else {
-      message.channel.send(args);
+      message.channel.send(args); // თუ არხი არ არის მინიშნებული, ტექსტი მიმდინარე არხში
     }
 
-    // წაშლის თავდაპირველი მესიჯი
+    // თავდაპირველი მესიჯის წაშლა
     message.delete().catch(() => {});
   }
 });
