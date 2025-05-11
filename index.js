@@ -1,30 +1,15 @@
-/*
-
-☆.。.:*・°☆.。.:*・°☆.。.:*・°☆.。.:*・°☆
-                                                 
-  _________ ___ ___ ._______   _________    
- /   _____//   |   \|   \   \ /   /  _  \   
- \_____  \/    ~    \   |\   Y   /  /_\  \  
- /        \    Y    /   | \     /    |    \ 
-/_______  /\___|_  /|___|  \___/\____|__  / 
-        \/       \/                     \/  
-                    
-DISCORD :  https://discord.com/invite/xQF9f9yUEM                   
-YouTube : https://www.youtube.com/@GlaceYT                         
-                                                                       
-☆.。.:*・°☆.。.:*・°☆.。.:*・°☆.。.:*・°☆
-
-
-*/
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, Partials } = require('discord.js');
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
 const client = new Client({
   intents: [
-    GatewayIntentBits.Guilds
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ],
+  partials: [Partials.Channel]
 });
 
 const app = express();
@@ -38,7 +23,7 @@ app.listen(port, () => {
 });
 
 const statusMessages = ["🤖 Hi, I am Horizon Beyond Role Play Official Bot."];
-const statusTypes = [ 'dnd', 'idle'];
+const statusTypes = ['dnd', 'idle'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
 
@@ -79,24 +64,34 @@ client.once('ready', () => {
   heartbeat();
 });
 
+// ცვლის ქვემოთ როლს თქვენს Discord როლის ID-თან
+const allowedRoleId = '1327435040732352601'; // აქ ჩასვით როლის ID
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  if (message.content.startsWith('!say')) {
+    // კონდიციები, რათა მხოლოდ კონკრეტულ როლს ჰქონდეს ნებართვა
+    const hasRole = message.member?.roles.cache.has(allowedRoleId);
+    if (!hasRole) {
+      return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
+    }
+
+    const args = message.content.slice(4).trim();
+    if (!args) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+
+    const channelMention = message.mentions.channels.first();
+    if (channelMention) {
+      const text = args.replace(channelMention.toString(), '').trim();
+      if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+      channelMention.send(text);
+    } else {
+      message.channel.send(args);
+    }
+
+    // წაშლის თავდაპირველი მესიჯი
+    message.delete().catch(() => {});
+  }
+});
+
 login();
-
-  
-/*
-
-☆.。.:*・°☆.。.:*・°☆.。.:*・°☆.。.:*・°☆
-                                                 
-  _________ ___ ___ ._______   _________    
- /   _____//   |   \|   \   \ /   /  _  \   
- \_____  \/    ~    \   |\   Y   /  /_\  \  
- /        \    Y    /   | \     /    |    \ 
-/_______  /\___|_  /|___|  \___/\____|__  / 
-        \/       \/                     \/  
-                    
-DISCORD :  https://discord.com/invite/xQF9f9yUEM                   
-YouTube : https://www.youtube.com/@GlaceYT                         
-                                                                       
-☆.。.:*・°☆.。.:*・°☆.。.:*・°☆.。.:*・°☆
-
-
-*/
