@@ -135,16 +135,8 @@ client.on('messageCreate', async (message) => {
     }
     
     // შეამოწმეთ ფერის სისწორე
-    let embedColor;
-    
-    if (isValidHexColor(colorInput)) {
-      // თუ პირდაპირ HEX კოდია მითითებული (#FF0000)
-      embedColor = colorInput;
-    } else if (validColors[colorInput]) {
-      // თუ წინასწარ განსაზღვრული ფერის სახელია (red, blue, etc.)
-      embedColor = validColors[colorInput];
-    } else {
-      return message.reply(`⚠️ არასწორი ფერი. შეგიძლიათ გამოიყენოთ HEX კოდი (მაგ: #FF0000) ან შემდეგი ფერები: ${Object.keys(validColors).join(', ')}`);
+    if (!isValidHexColor(colorInput)) {
+      return message.reply(`⚠️ არასწორი ფერის HEX კოდი. გამოიყენეთ ფორმატი #RRGGBB ან #RGB (მაგ: #FF0000 წითელისთვის, #00FF00 მწვანისთვის)`);
     }
     
     if (!text) {
@@ -154,13 +146,15 @@ client.on('messageCreate', async (message) => {
     // შექმენით embed შეტყობინება ფერადი ზოლით
     const embed = new EmbedBuilder()
       .setDescription(text)
-      .setColor(embedColor);
+      .setColor(colorInput);
     
     // გაგზავნეთ embed
     targetChannel.send({ embeds: [embed] });
     
     // წაშალეთ თავდაპირველი ბრძანება
-    message.delete().catch(() => {});
+    message.delete().catch(() => {
+      console.log('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete command message');
+    });
   }
 });
 
