@@ -25,7 +25,7 @@ let currentStatusIndex = 0;
 let currentTypeIndex = 0;
 
 // შეცვალეთ ეს თქვენი Discord user ID-ით
-const yourUserId = '1327435040732352601'; // აქ ჩასვით თქვენი ID
+const yourUserId = '1326983284168720505'; // აქ ჩასვით თქვენი ID
 
 async function login() {
   try {
@@ -60,20 +60,6 @@ client.once('ready', () => {
   setInterval(updateStatus, 10000);
   heartbeat();
 });
-
-// ფერების სია კომანდისთვის
-const validColors = {
-  'red': '#FF0000',
-  'blue': '#0000FF',
-  'green': '#00FF00',
-  'yellow': '#FFFF00',
-  'purple': '#800080',
-  'orange': '#FFA500',
-  'black': '#000000',
-  'white': '#FFFFFF',
-  'cyan': '#00FFFF',
-  'magenta': '#FF00FF'
-};
 
 // ფუნქცია, რომელიც ამოწმებს არის თუ არა ჩანაწერი HEX ფერის კოდი
 function isValidHexColor(color) {
@@ -122,16 +108,15 @@ client.on('messageCreate', async (message) => {
     }
     
     // გამოყავით ფერი და ტექსტი ბრძანებიდან
-    // ფორმატი: !embed red ტექსტი აქ
-    // ან: !embed #FF0000 ტექსტი აქ
+    // ფორმატი: !embed #FF0000 ტექსტი აქ
     const fullCommand = message.content.slice(7).trim();
     const firstSpace = fullCommand.indexOf(' ');
     
     if (firstSpace === -1) {
-      return message.reply("⚠️ გთხოვ, მიუთითე ფერი და ტექსტი, მაგ: `!embed red გამარჯობა` ან `!embed #FF0000 გამარჯობა`");
+      return message.reply("⚠️ გთხოვ, მიუთითე ფერის HEX კოდი და ტექსტი, მაგ: `!embed #FF0000 გამარჯობა`");
     }
     
-    const colorInput = fullCommand.slice(0, firstSpace).toLowerCase();
+    const colorInput = fullCommand.slice(0, firstSpace);
     let text = fullCommand.slice(firstSpace + 1).trim();
     
     // მოძებნეთ ხომ არ არის არხი მითითებული
