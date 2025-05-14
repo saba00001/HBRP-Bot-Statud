@@ -74,13 +74,23 @@ client.on('messageCreate', async (message) => {
   
   // !say კომანდა - ჩვეულებრივი ტექსტის გასაგზავნად
   if (message.content.startsWith('!say')) {
+    // დაუყოვნებლივ წაშალეთ ბრძანება, სანამ რაიმე სხვა ლოგიკას დავიწყებთ
+    try {
+      await message.delete();
+    } catch (error) {
+      console.error('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete command message:', error.message);
+      // მაინც გააგრძელეთ შესრულება, თუნდაც წაშლა ვერ მოხერხდეს
+    }
+    
     if (!isAuthorized) {
-      return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
+      return message.author.send("❌ ამ ბრძანების გამოყენება არ შეგიძლია.").catch(() => {});
     }
     
     // მთელი შინაარსის აღება !say-ს გარეშე
     const args = message.content.slice(4).trim();
-    if (!args) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+    if (!args) {
+      return message.author.send("⚠️ გთხოვ, მიუთითე ტექსტი.").catch(() => {});
+    }
     
     // შეამოწმეთ ხომ არ არის არხი მითითებული
     const channelMention = message.mentions.channels.first();
@@ -89,7 +99,9 @@ client.on('messageCreate', async (message) => {
       if (channelMention) {
         // გამოალევინეთ არხის მითითება ტექსტიდან
         const text = args.replace(/<#\d+>/, '').trim();
-        if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+        if (!text) {
+          return message.author.send("⚠️ გთხოვ, მიუთითე ტექსტი.").catch(() => {});
+        }
         
         // გაგზავნეთ ტექსტი მითითებულ არხში
         await channelMention.send(text);
@@ -97,21 +109,20 @@ client.on('messageCreate', async (message) => {
         // გაგზავნეთ ტექსტი იმავე არხში
         await message.channel.send(args);
       }
-      
-      // მცირე დაყოვნება წაშლამდე
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // წაშალეთ თავდაპირველი ბრძანება
-      await message.delete();
     } catch (error) {
       console.error('\x1b[31m[ ERROR ]\x1b[0m', 'Error in !say command:', error.message);
+      message.author.send("❌ შეცდომა შეტყობინების გაგზავნისას. გთხოვთ, სცადოთ მოგვიანებით.").catch(() => {});
     }
   }
   
   // !embed კომანდა - ფერადი გვერდით ზოლიანი შეტყობინების გასაგზავნად
   if (message.content.startsWith('!embed')) {
-    if (!isAuthorized) {
-      return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
+    // დაუყოვნებლივ წაშალეთ ბრძანება, სანამ რაიმე სხვა ლოგიკას დავიწყებთ
+    try {
+      await message.delete();
+    } catch (error) {
+      console.error('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete command message:', error.message);
+      // მაინც გააგრძელეთ შესრულება, თუნდაც წაშლა ვერ მოხერხდეს
     }
     
     // გამოყავით ფერი და ტექსტი ბრძანებიდან
