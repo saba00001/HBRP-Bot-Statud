@@ -1,8 +1,7 @@
-const { Client, GatewayIntentBits, ActivityType, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, Partials, EmbedBuilder } = require('discord.js');
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -11,7 +10,6 @@ const client = new Client({
   ],
   partials: [Partials.Channel]
 });
-
 const app = express();
 const port = 3000;
 app.get('/', (req, res) => {
@@ -21,11 +19,13 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log('\x1b[36m[ SERVER ]\x1b[0m', '\x1b[32m SH : http://localhost:' + port + ' ✅\x1b[0m');
 });
-
 const statusMessages = ["🤖 Hi, I am Horizon Beyond Role Play Official Bot."];
 const statusTypes = ['dnd', 'idle'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
+
+// შეცვალეთ ეს თქვენი Discord user ID-ით
+const yourUserId = '1326983284168720505'; // აქ ჩასვით თქვენი ID
 
 async function login() {
   try {
@@ -38,7 +38,6 @@ async function login() {
     process.exit(1);
   }
 }
-
 function updateStatus() {
   const currentStatus = statusMessages[currentStatusIndex];
   const currentType = statusTypes[currentTypeIndex];
@@ -50,13 +49,11 @@ function updateStatus() {
   currentStatusIndex = (currentStatusIndex + 1) % statusMessages.length;
   currentTypeIndex = (currentTypeIndex + 1) % statusTypes.length;
 }
-
 function heartbeat() {
   setInterval(() => {
     console.log('\x1b[35m[ HEARTBEAT ]\x1b[0m', `Bot is alive at ${new Date().toLocaleTimeString()}`);
   }, 30000);
 }
-
 client.once('ready', () => {
   console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[34mPing: ${client.ws.ping} ms \x1b[0m`);
   updateStatus();
@@ -64,32 +61,106 @@ client.once('ready', () => {
   heartbeat();
 });
 
-// ცვლის ქვემოთ როლს თქვენს Discord როლის ID-თან
-const allowedRoleId = '1327435040732352601'; // აქ ჩასვით როლის ID
+// ფერების სია კომანდისთვის
+const validColors = {
+  'red': '#FF0000',
+  'blue': '#0000FF',
+  'green': '#00FF00',
+  'yellow': '#FFFF00',
+  'purple': '#800080',
+  'orange': '#FFA500',
+  'black': '#000000',
+  'white': '#FFFFFF',
+  'cyan': '#00FFFF',
+  'magenta': '#FF00FF'
+};
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
-
+  
+  // შეამოწმეთ მომხმარებლის უფლებები
+  const isAuthorized = message.author.id === yourUserId;
+  
+  // !say კომანდა - ჩვეულებრივი ტექსტის გასაგზავნად
   if (message.content.startsWith('!say')) {
-    // კონდიციები, რათა მხოლოდ კონკრეტულ როლს ჰქონდეს ნებართვა
-    const hasRole = message.member?.roles.cache.has(allowedRoleId);
-    if (!hasRole) {
+    if (!isAuthorized) {
       return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
     }
-
+    
+    // მთელი შინაარსის აღება !say-ს გარეშე
     const args = message.content.slice(4).trim();
     if (!args) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
-
+    
+    // შეამოწმეთ ხომ არ არის არხი მითითებული
     const channelMention = message.mentions.channels.first();
+    
     if (channelMention) {
-      const text = args.replace(channelMention.toString(), '').trim();
+      // გამოალევინეთ არხის მითითება ტექსტიდან
+      const text = args.replace(/<#\d+>/, '').trim();
       if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+      
+      // გაგზავნეთ ტექსტი მითითებულ არხში
       channelMention.send(text);
     } else {
+      // გაგზავნეთ ტექსტი იმავე არხში
       message.channel.send(args);
     }
-
-    // წაშლის თავდაპირველი მესიჯი
+    
+    // წაშალეთ თავდაპირველი ბრძანება
+    message.delete().catch(() => {});
+  }
+  
+  // !embed კომანდა - ფერადი გვერდით ზოლიანი შეტყობინების გასაგზავნად
+  if (message.content.startsWith('!embed')) {
+    if (!isAuthorized) {
+      return message.reply("❌ ამ ბრძანების გამოყენება არ შეგიძლია.");
+    }
+    
+    // გამოყავით ფერი და ტექსტი ბრძანებიდან
+    // ფორმატი: !embed red ტექსტი აქ
+    const fullCommand = message.content.slice(7).trim();
+    const firstSpace = fullCommand.indexOf(' ');
+    
+    if (firstSpace === -1) {
+      return message.reply("⚠️ გთხოვ, მიუთითე ფერი და ტექსტი, მაგ: `!embed red გამარჯობა`");
+    }
+    
+    const colorName = fullCommand.slice(0, firstSpace).toLowerCase();
+    let text = fullCommand.slice(firstSpace + 1).trim();
+    
+    // მოძებნეთ ხომ არ არის არხი მითითებული
+    const channelRegex = /<#(\d+)>/;
+    const channelMatch = text.match(channelRegex);
+    let targetChannel = message.channel;
+    
+    if (channelMatch) {
+      const channelId = channelMatch[1];
+      targetChannel = client.channels.cache.get(channelId);
+      text = text.replace(channelRegex, '').trim();
+      
+      if (!targetChannel) {
+        return message.reply("⚠️ მითითებული არხი ვერ მოიძებნა.");
+      }
+    }
+    
+    // შეამოწმეთ ფერის სისწორე
+    if (!validColors[colorName]) {
+      return message.reply(`⚠️ არასწორი ფერი. შესაძლო ფერებია: ${Object.keys(validColors).join(', ')}`);
+    }
+    
+    if (!text) {
+      return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+    }
+    
+    // შექმენით embed შეტყობინება ფერადი ზოლით
+    const embed = new EmbedBuilder()
+      .setDescription(text)
+      .setColor(validColors[colorName]);
+    
+    // გაგზავნეთ embed
+    targetChannel.send({ embeds: [embed] });
+    
+    // წაშალეთ თავდაპირველი ბრძანება
     message.delete().catch(() => {});
   }
 });
