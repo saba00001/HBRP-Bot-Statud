@@ -25,7 +25,7 @@ let currentStatusIndex = 0;
 let currentTypeIndex = 0;
 
 // შეცვალეთ ეს თქვენი Discord user ID-ით
-const yourUserId = '1326983284168720505'; // აქ ჩასვით თქვენი ID
+const yourUserId = '1327435040732352601'; // აქ ჩასვით თქვენი ID
 
 async function login() {
   try {
@@ -75,6 +75,11 @@ const validColors = {
   'magenta': '#FF00FF'
 };
 
+// ფუნქცია, რომელიც ამოწმებს არის თუ არა ჩანაწერი HEX ფერის კოდი
+function isValidHexColor(color) {
+  return /^#([0-9A-F]{3}){1,2}$/i.test(color);
+}
+
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   
@@ -118,14 +123,15 @@ client.on('messageCreate', async (message) => {
     
     // გამოყავით ფერი და ტექსტი ბრძანებიდან
     // ფორმატი: !embed red ტექსტი აქ
+    // ან: !embed #FF0000 ტექსტი აქ
     const fullCommand = message.content.slice(7).trim();
     const firstSpace = fullCommand.indexOf(' ');
     
     if (firstSpace === -1) {
-      return message.reply("⚠️ გთხოვ, მიუთითე ფერი და ტექსტი, მაგ: `!embed red გამარჯობა`");
+      return message.reply("⚠️ გთხოვ, მიუთითე ფერი და ტექსტი, მაგ: `!embed red გამარჯობა` ან `!embed #FF0000 გამარჯობა`");
     }
     
-    const colorName = fullCommand.slice(0, firstSpace).toLowerCase();
+    const colorInput = fullCommand.slice(0, firstSpace).toLowerCase();
     let text = fullCommand.slice(firstSpace + 1).trim();
     
     // მოძებნეთ ხომ არ არის არხი მითითებული
@@ -144,8 +150,16 @@ client.on('messageCreate', async (message) => {
     }
     
     // შეამოწმეთ ფერის სისწორე
-    if (!validColors[colorName]) {
-      return message.reply(`⚠️ არასწორი ფერი. შესაძლო ფერებია: ${Object.keys(validColors).join(', ')}`);
+    let embedColor;
+    
+    if (isValidHexColor(colorInput)) {
+      // თუ პირდაპირ HEX კოდია მითითებული (#FF0000)
+      embedColor = colorInput;
+    } else if (validColors[colorInput]) {
+      // თუ წინასწარ განსაზღვრული ფერის სახელია (red, blue, etc.)
+      embedColor = validColors[colorInput];
+    } else {
+      return message.reply(`⚠️ არასწორი ფერი. შეგიძლიათ გამოიყენოთ HEX კოდი (მაგ: #FF0000) ან შემდეგი ფერები: ${Object.keys(validColors).join(', ')}`);
     }
     
     if (!text) {
@@ -155,7 +169,7 @@ client.on('messageCreate', async (message) => {
     // შექმენით embed შეტყობინება ფერადი ზოლით
     const embed = new EmbedBuilder()
       .setDescription(text)
-      .setColor(validColors[colorName]);
+      .setColor(embedColor);
     
     // გაგზავნეთ embed
     targetChannel.send({ embeds: [embed] });
