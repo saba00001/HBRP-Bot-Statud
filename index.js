@@ -80,7 +80,9 @@ client.on('messageCreate', async (message) => {
     
     // მთელი შინაარსის აღება !say-ს გარეშე
     const args = message.content.slice(4).trim();
-    if (!args) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+    if (!args) {
+      return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+    }
     
     // შეამოწმეთ ხომ არ არის არხი მითითებული
     const channelMention = message.mentions.channels.first();
@@ -89,7 +91,6 @@ client.on('messageCreate', async (message) => {
       if (channelMention) {
         // გამოალევინეთ არხის მითითება ტექსტიდან
         const text = args.replace(/<#\d+>/, '').trim();
-        if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
         
         // გაგზავნეთ ტექსტი მითითებულ არხში
         await channelMention.send(text);
@@ -102,7 +103,12 @@ client.on('messageCreate', async (message) => {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       // წაშალეთ თავდაპირველი ბრძანება
-      await message.delete();
+      try {
+        await message.delete();
+        console.log('\x1b[32m[ SUCCESS ]\x1b[0m', '!say command message deleted successfully');
+      } catch (error) {
+        console.log('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete !say command message:', error.message);
+      }
     } catch (error) {
       console.error('\x1b[31m[ ERROR ]\x1b[0m', 'Error in !say command:', error.message);
     }
@@ -146,10 +152,6 @@ client.on('messageCreate', async (message) => {
       return message.reply(`⚠️ არასწორი ფერის HEX კოდი. გამოიყენეთ ფორმატი #RRGGBB ან #RGB (მაგ: #FF0000 წითელისთვის, #00FF00 მწვანისთვის)`);
     }
     
-    if (!text) {
-      return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
-    }
-    
     // შექმენით embed შეტყობინება ფერადი ზოლით
     const embed = new EmbedBuilder()
       .setDescription(text)
@@ -164,9 +166,9 @@ client.on('messageCreate', async (message) => {
     // წაშალეთ თავდაპირველი ბრძანება
     try {
       await message.delete();
-      console.log('\x1b[32m[ SUCCESS ]\x1b[0m', 'Command message deleted successfully');
+      console.log('\x1b[32m[ SUCCESS ]\x1b[0m', '!embed command message deleted successfully');
     } catch (error) {
-      console.log('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete command message:', error.message);
+      console.log('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete !embed command message:', error.message);
     }
   }
 });
