@@ -85,20 +85,27 @@ client.on('messageCreate', async (message) => {
     // შეამოწმეთ ხომ არ არის არხი მითითებული
     const channelMention = message.mentions.channels.first();
     
-    if (channelMention) {
-      // გამოალევინეთ არხის მითითება ტექსტიდან
-      const text = args.replace(/<#\d+>/, '').trim();
-      if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+    try {
+      if (channelMention) {
+        // გამოალევინეთ არხის მითითება ტექსტიდან
+        const text = args.replace(/<#\d+>/, '').trim();
+        if (!text) return message.reply("⚠️ გთხოვ, მიუთითე ტექსტი.");
+        
+        // გაგზავნეთ ტექსტი მითითებულ არხში
+        await channelMention.send(text);
+      } else {
+        // გაგზავნეთ ტექსტი იმავე არხში
+        await message.channel.send(args);
+      }
       
-      // გაგზავნეთ ტექსტი მითითებულ არხში
-      channelMention.send(text);
-    } else {
-      // გაგზავნეთ ტექსტი იმავე არხში
-      message.channel.send(args);
+      // მცირე დაყოვნება წაშლამდე
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // წაშალეთ თავდაპირველი ბრძანება
+      await message.delete();
+    } catch (error) {
+      console.error('\x1b[31m[ ERROR ]\x1b[0m', 'Error in !say command:', error.message);
     }
-    
-    // წაშალეთ თავდაპირველი ბრძანება
-    message.delete().catch(() => {});
   }
   
   // !embed კომანდა - ფერადი გვერდით ზოლიანი შეტყობინების გასაგზავნად
@@ -149,12 +156,18 @@ client.on('messageCreate', async (message) => {
       .setColor(colorInput);
     
     // გაგზავნეთ embed
-    targetChannel.send({ embeds: [embed] });
+    await targetChannel.send({ embeds: [embed] });
+    
+    // მცირე დაყოვნება წაშლამდე, რათა Discord-ის კლიენტმა მოასწროს სინქრონიზაცია
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     // წაშალეთ თავდაპირველი ბრძანება
-    message.delete().catch(() => {
-      console.log('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete command message');
-    });
+    try {
+      await message.delete();
+      console.log('\x1b[32m[ SUCCESS ]\x1b[0m', 'Command message deleted successfully');
+    } catch (error) {
+      console.log('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to delete command message:', error.message);
+    }
   }
 });
 
