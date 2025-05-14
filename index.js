@@ -152,9 +152,9 @@ client.on('messageCreate', async (message) => {
       return message.reply(`⚠️ არასწორი ფერის HEX კოდი. გამოიყენეთ ფორმატი #RRGGBB ან #RGB (მაგ: #FF0000 წითელისთვის, #00FF00 მწვანისთვის)`);
     }
     
-    // შექმენით embed შეტყობინება ფერადი ზოლით და მუქი ტექსტით (bold)
+    // შექმენით embed შეტყობინება ფერადი ზოლით
     const embed = new EmbedBuilder()
-      .setDescription(`**${text}**`) // ვამატებთ ** სიმბოლოებს ტექსტის გარშემო გამუქებისთვის
+      .setDescription(text)
       .setColor(colorInput);
     
     // გაგზავნეთ embed
