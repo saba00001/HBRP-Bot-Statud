@@ -19,13 +19,13 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log('\x1b[36m[ SERVER ]\x1b[0m', '\x1b[32m SH : http://localhost:' + port + ' ✅\x1b[0m');
 });
-const statusMessages = ["🤖 Hi, I am Horizon Beyond Role Play Official Bot."];
+const statusMessages = ["🤖 Hi, I am SmartTask Official Bot."];
 const statusTypes = ['dnd', 'idle'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
 
 // შეცვალეთ ეს თქვენი Discord user ID-ით
-const yourUserId = '1326983284168720505'; // აქ ჩასვით თქვენი ID
+const yourUserId = '1381148146637213736'; // აქ ჩასვით თქვენი ID
 
 async function login() {
   try {
