@@ -25,7 +25,7 @@ let currentStatusIndex = 0;
 let currentTypeIndex = 0;
 
 // შეცვალეთ ეს თქვენი Discord user ID-ით
-const yourUserId = '1381148146637213736'; // აქ ჩასვით თქვენი ID
+const yourUserId = '1380901363726286870'; // აქ ჩასვით თქვენი ID
 
 async function login() {
   try {
